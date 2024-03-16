@@ -33,3 +33,18 @@ class MessageSerializer(ModelSerializer):
     class Meta:
         model = models.Message
         fields = '__all__'
+
+
+# Post CRUD serailizer
+        
+class PostFilesSerializer(ModelSerializer):
+    class Meta:
+        model = models.PostFiles
+        fields = '__all__'
+
+class PostSerializer(ModelSerializer):
+    post_files = PostFilesSerializer(many=True)
+    class Meta:
+        model = models.Post
+        fields = '__all__'
+

@@ -4,6 +4,7 @@ from main import models
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
 
+from rest_framework.exceptions import NotFound
 from rest_framework.authtoken.models import Token
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -109,3 +110,42 @@ class CreateChatAPIview(APIView):
     
 
 
+#  Post CRUD
+        
+class CRUDPostPIview(APIView):
+    
+    def put(self, request, id):
+        post = models.Post.objects.get(id=id)
+        serializer = serializers.PostSerializer(post, data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+        return Response(serializer.data)
+    
+    def post(self, request):
+        serializer = serializers.PostSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+    def get(self):
+        try:
+            posts = models.Post.objects.all()
+            serializer = serializers.PostSerializer(posts, many=True)
+            return Response(serializer.data)
+        except models.Post.DoesNotExist:    
+            raise NotFound(detail='Not found')
+
+    def delete(self, request, pk):
+        try:
+            post = models.Post.objects.get(pk=pk)
+            post.delete()
+            return Response({'message': 'The post has been deleted!'})
+        except models.Post.DoesNotExist:
+            raise NotFound(detail=('Not Found any post'))
+
+
+class FilterPostAPIview(APIView):
+    
+    def get(self, request, *args, **kwargs):
+        ...
