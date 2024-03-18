@@ -48,3 +48,7 @@ class PostSerializer(ModelSerializer):
         model = models.Post
         fields = '__all__'
 
+class CommentSerializer(ModelSerializer):
+    class Meta:
+        model: models.Comment
+        fields = '__all__'

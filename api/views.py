@@ -3,6 +3,7 @@ from main import models
 
 from django.contrib.auth import authenticate
 from django.shortcuts import get_object_or_404
+from django.core.exceptions import ValidationError
 
 from rest_framework.exceptions import NotFound
 from rest_framework.authtoken.models import Token
@@ -145,7 +146,35 @@ class CRUDPostPIview(APIView):
             raise NotFound(detail=('Not Found any post'))
 
 
+from . import funcs
 class FilterPostAPIview(APIView):
     
-    def get(self, request, *args, **kwargs):
-        ...
+    def get(self, request):
+        filtered = funcs.filter_post(request)
+        try:
+            products = models.Post.objects.filter(**filtered)
+        except models.Post.DoesNotExist:
+            raise NotFound('Post not found!')
+        try:
+            serializer = serializers.PostFilesSerializer(products, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError as e:
+            return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        
+# Comment CRUD
+        
+class CRUDCommentAPIview(APIView):
+
+    def get(self, request):
+        try: 
+            comments = models.Comment.objects.all()
+        except models.Comment.DoesNotExist:
+            raise NotFound('Comment not found')
+        try: 
+            serializer = serializers.CommentSerializer(comments, many=True)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        except ValidationError:
+            raise ValidationError('VValidation error!')
+        
+
+        
